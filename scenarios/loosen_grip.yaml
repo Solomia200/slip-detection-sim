@@ -1,0 +1,8 @@
+description: "Поступово послаблюємо хват, поки циліндр не вислизне"
+
+phases:
+  - {do: close, force_n: 6}
+  - {do: hold, duration_s: 0.3}
+  - {do: lift, height_mm: 50, duration_s: 1.0}
+  - {do: hold, duration_s: 0.3}
+  - {do: ramp_grip, to_force_n: 0, duration_s: 6}

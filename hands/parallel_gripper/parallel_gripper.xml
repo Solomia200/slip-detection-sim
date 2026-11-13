@@ -1,0 +1,41 @@
+<!--
+Two-finger parallel gripper, written by hand as an example of a hand loaded from a file
+(`hand: {type: xml}` in a scenario). Not a model of a real product; masses and gains are
+not calibrated.
+
+The fingers are pure force motors (ctrl = newtons along the slider), like the radial
+gripper, so `close: {force_n: 6}` means 6 N per finger. The palm sits 70 mm above the
+middle of the default cylinder (height 100 mm) and moves up on a position servo.
+
+Pads are not in this file: slipsim attaches them to finger_left and finger_right.
+Each finger's origin is where the centre of its pad goes.
+-->
+<mujoco model="parallel_gripper">
+  <worldbody>
+    <body name="palm" pos="0 0 0.12" gravcomp="1">
+      <inertial pos="0 0 0" mass="0.3" diaginertia="1e-3 1e-3 1e-3"/>
+      <joint name="lift" type="slide" axis="0 0 1"/>
+      <geom type="box" size="0.012 0.06 0.006" rgba="0.15 0.15 0.18 1"/>
+
+      <body name="finger_left" pos="0 0.045 -0.07" gravcomp="1">
+        <inertial pos="0 0 0" mass="0.05" diaginertia="1e-5 1e-5 1e-5"/>
+        <joint name="left_slide" type="slide" axis="0 -1 0" range="-0.005 0.03" damping="20"/>
+        <geom type="box" size="0.009 0.002 0.009" pos="0 0.004 0" rgba="0.15 0.15 0.18 1"/>
+        <geom type="box" size="0.005 0.002 0.035" pos="0 0.006 0.035" rgba="0.15 0.15 0.18 1"/>
+      </body>
+
+      <body name="finger_right" pos="0 -0.045 -0.07" gravcomp="1">
+        <inertial pos="0 0 0" mass="0.05" diaginertia="1e-5 1e-5 1e-5"/>
+        <joint name="right_slide" type="slide" axis="0 1 0" range="-0.005 0.03" damping="20"/>
+        <geom type="box" size="0.009 0.002 0.009" pos="0 -0.004 0" rgba="0.15 0.15 0.18 1"/>
+        <geom type="box" size="0.005 0.002 0.035" pos="0 -0.006 0.035" rgba="0.15 0.15 0.18 1"/>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <position name="lift" joint="lift" kp="20000" kv="500"/>
+    <motor name="left" joint="left_slide"/>
+    <motor name="right" joint="right_slide"/>
+  </actuator>
+</mujoco>

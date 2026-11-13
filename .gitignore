@@ -1,0 +1,32 @@
+# Python environment and build output
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Test and tool caches
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Simulation output (every run writes a new folder; rerun from its config.yaml instead)
+results/
+MUJOCO_LOG.TXT
+*.log
+
+# Editors and OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Personal settings and secrets
+.env
+.claude/settings.local.json

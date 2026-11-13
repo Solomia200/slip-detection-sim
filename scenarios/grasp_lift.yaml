@@ -1,0 +1,10 @@
+description: "Базовий: взяти циліндр зі столу, підняти й утримати"
+
+hand: {n_fingers: 3}
+object: {radius_mm: 25, height_mm: 100, mass_g: 200, mu: 0.5}
+
+phases:
+  - {do: close, force_n: 6}
+  - {do: hold, duration_s: 0.3}
+  - {do: lift, height_mm: 50, duration_s: 1.0}
+  - {do: hold, duration_s: 1.0}

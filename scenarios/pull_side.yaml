@@ -1,0 +1,9 @@
+description: "Тягнемо циліндр убік, поки він не зрушить"
+
+phases:
+  - {do: close, force_n: 6}
+  - {do: hold, duration_s: 0.3}
+  - {do: lift, height_mm: 50, duration_s: 1.0}
+  - {do: hold, duration_s: 0.3}
+  - {do: lock_fingers}
+  - {do: ramp_load, force_n: [40, 0, 0], duration_s: 12}

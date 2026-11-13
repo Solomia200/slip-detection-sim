@@ -1,0 +1,8 @@
+description: "Обертальне ковзання: крутимо циліндр навколо його осі"
+
+phases:
+  - {do: close, force_n: 6}
+  - {do: hold, duration_s: 0.3}
+  - {do: lift, height_mm: 50, duration_s: 1.0}
+  - {do: hold, duration_s: 0.3}
+  - {do: ramp_load, torque_nm: [0, 0, 1.0], duration_s: 10}

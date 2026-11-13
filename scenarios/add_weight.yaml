@@ -1,0 +1,8 @@
+description: "Поступово додаємо вагу, поки циліндр не поїде вниз"
+
+phases:
+  - {do: close, force_n: 6}
+  - {do: hold, duration_s: 0.3}
+  - {do: lift, height_mm: 50, duration_s: 1.0}
+  - {do: hold, duration_s: 0.3}
+  - {do: ramp_load, force_n: [0, 0, -40], duration_s: 12}
