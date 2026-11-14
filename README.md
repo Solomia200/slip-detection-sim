@@ -20,6 +20,8 @@ slipsim list                                        # available scenarios
 slipsim run grasp_lift --view                       # run with the 3D viewer
 slipsim run grasp_lift --set hand.n_fingers=6       # same, with 6 fingers
 slipsim run parallel_lift --view                    # two-finger gripper loaded from XML
+slipsim run xarm_lift --view                        # UFACTORY xArm Gripper loaded from XML
+slipsim run add_weight --set hand.type=xarm_gripper # any scenario with UFACTORY xArm Gripper
 slipsim run add_weight --set object.mu=0.3 --set pad.pitch_mm=1 --set pad.rows=13
 slipsim show add_weight                             # all parameters of a scenario
 ```

@@ -16,7 +16,7 @@ OBJECT_CONTYPE, TABLE_CONAFFINITY = 2, 2
 
 def explicit_body(parent, name, pos, mass, inertia, quat=None):
     """A body with hand-set mass and no weight (gravity is compensated)."""
-    body = parent.add_body(name=name, pos=list(pos))
+    body = parent.add_body(name=name, pos=list(pos), childclass="main")
     if quat is not None:
         body.quat = list(quat)
     body.explicitinertial = True

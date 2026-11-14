@@ -6,6 +6,8 @@ Two ways to add a hand:
      Use `hand: {type: xml, file: ..., pads: [...]}` in the scenario; see XmlHand.
   2. Built in code: subclass Hand and register it with @hand("name"); see RadialGripper.
 """
+from pathlib import Path
+
 import mujoco
 import numpy as np
 
@@ -32,6 +34,7 @@ class Hand:
 
     taxels: list
     palm_body: int   # body id of the hand's reference body ("palm"); set in bind()
+    grip_gear = 1.0  # force-per-unit-ctrl / position-to-displacement scale for lock_fingers
 
     def bind(self, model):
         """Look up actuator, joint and body ids by name; called once after compiling."""
@@ -152,6 +155,12 @@ class XmlHand(Hand):
         self._cfg = cfg
         path = resolve_path(cfg.file)
         child = mujoco.MjSpec.from_file(str(path))
+        meshdir = Path(child.meshdir) if child.meshdir else Path(".")
+        if not meshdir.is_absolute():
+            child.meshdir = str((path.parent / meshdir).resolve())
+        for body in child.bodies:
+            if body is not child.worldbody:
+                body.gravcomp = 1.0
         for geom in child.geoms:
             geom.contype, geom.conaffinity = 0, 0
         frame = spec.worldbody.add_frame(pos=_metres(cfg.pos_mm), quat=_quat(cfg.euler_deg))
@@ -176,8 +185,17 @@ class XmlHand(Hand):
 
         cfg = self._cfg
         self._grip_acts = np.array([find("actuator", n) for n in cfg.grip_actuators])
-        joints = model.actuator_trnid[self._grip_acts, 0]
-        self._grip_qpos = model.jnt_qposadr[joints]
+        self._grip_sources = []
+        for act in self._grip_acts:
+            trntype = model.actuator_trntype[act]
+            target_id = int(model.actuator_trnid[act, 0])
+            if trntype == mujoco.mjtTrn.mjTRN_TENDON:
+                self._grip_sources.append((True, target_id))
+            elif trntype in (mujoco.mjtTrn.mjTRN_JOINT, mujoco.mjtTrn.mjTRN_JOINTINPARENT):
+                self._grip_sources.append((False, int(model.jnt_qposadr[target_id])))
+            else:
+                raise ValueError(f"непідтримуваний тип передачі актуатора {act}")
+        self.grip_gear = model.actuator_gear[self._grip_acts, 0].copy()
         self._lift_act = None if cfg.lift_actuator is None else find("actuator", cfg.lift_actuator)
         self.palm_body = find("body", cfg.palm_body)
         self._model = model
@@ -187,7 +205,10 @@ class XmlHand(Hand):
         data.ctrl[self._grip_acts] = value
 
     def finger_positions(self, data):
-        return data.qpos[self._grip_qpos].copy()
+        return np.array([
+            data.ten_length[idx] if is_tendon else data.qpos[idx]
+            for is_tendon, idx in self._grip_sources
+        ])
 
     def set_lift(self, data, height):
         if self._lift_act is None:
@@ -198,6 +219,11 @@ class XmlHand(Hand):
         mujoco.mj_objectVelocity(self._model, data, mujoco.mjtObj.mjOBJ_BODY, self.palm_body,
                                  self._velocity, 0)
         return self._velocity[5]   # world-frame linear velocity, z
+
+
+@hand("xarm_gripper")
+class XarmGripper(XmlHand):
+    """UFACTORY xArm Gripper (2-finger 4-bar parallel linkage)."""
 
 
 def _metres(mm):

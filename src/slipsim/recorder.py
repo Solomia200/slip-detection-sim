@@ -42,15 +42,15 @@ def contact_truth(scene):
     points = contact.pos[mask]
     frames = contact.frame[mask]
     # Elliptic cone: efc_force holds (normal, tangent1, tangent2) in contact frame.
-    fn[idx] = np.maximum(data.efc_force[adr], 0.0)
-    ft[idx] = np.hypot(data.efc_force[adr + 1], data.efc_force[adr + 2])
+    np.add.at(fn, idx, np.maximum(data.efc_force[adr], 0.0))
+    np.add.at(ft, idx, np.hypot(data.efc_force[adr + 1], data.efc_force[adr + 2]))
 
     object_bodies = np.full(len(idx), scene.object_body)
     rel = (_point_velocity(data, model, object_bodies, points)
            - _point_velocity(data, model, scene.taxel_bodies[idx], points))
     normals = frames[:, :3]
     rel_t = rel - np.sum(rel * normals, axis=1, keepdims=True) * normals
-    slip[idx] = np.linalg.norm(rel_t, axis=1)
+    np.maximum.at(slip, idx, np.linalg.norm(rel_t, axis=1))
     return fn, ft, slip
 
 

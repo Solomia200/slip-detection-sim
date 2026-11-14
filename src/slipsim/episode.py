@@ -41,7 +41,7 @@ class Context:
         if self._lock_stiffness is None:
             return
         hand, data = self._scene.hand, self._scene.data
-        spring = self._lock_stiffness * (self._lock_positions - hand.finger_positions(data))
+        spring = self._lock_stiffness * hand.grip_gear * (self._lock_positions - hand.finger_positions(data))
         hand.set_grip(data, self.grip_force + spring)
 
     def set_lift(self, height):

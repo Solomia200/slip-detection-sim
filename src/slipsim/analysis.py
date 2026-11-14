@@ -1,4 +1,6 @@
 """Turn a recorded episode into events, a summary and a plot."""
+from pathlib import Path
+
 import matplotlib
 
 matplotlib.use("Agg")
@@ -91,7 +93,8 @@ def plot_episode(rec, summary, scenario, path):
         if summary["gross_slip_s"] is not None:
             ax.axvline(summary["gross_slip_s"], color="tab:red", ls=":")
     hand = scenario.hand
-    hand_text = f"{hand.n_fingers} fingers" if hand.type == "radial" else f"{len(hand.pads)} pads"
+    hand_text = (f"{hand.n_fingers} fingers" if hand.type == "radial"
+                 else f"{Path(hand.file).stem} ({len(hand.pads)} pads)")
     axes[0].set_title(f"{scenario.name}: {hand_text}, mu={scenario.object.mu} "
                       f"(orange: first taxel slips, red: object slips)")
     fig.tight_layout()
