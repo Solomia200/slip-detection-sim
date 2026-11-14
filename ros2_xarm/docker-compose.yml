@@ -1,0 +1,20 @@
+services:
+  xarm_sim:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: xarm5_gazebo_sim
+    network_mode: host
+    ipc: host
+    privileged: true
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - QT_X11_NO_MITSHM=1
+      - LIBGL_ALWAYS_SOFTWARE=0
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ./scripts:/ros2_ws/scripts:rw
+    devices:
+      - /dev/dri:/dev/dri
+    stdin_open: true
+    tty: true
