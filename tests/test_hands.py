@@ -40,3 +40,31 @@ def test_xml_hand_names_unknown_body():
 def test_xml_hand_requires_its_fields():
     with pytest.raises(Exception):
         load_scenario("parallel_lift", ["hand.palm_body=null"])
+
+
+def test_xarm_gripper_lifts_cylinder():
+    _, _, summary, _ = simulate(load_scenario("xarm_lift", ["phases.3.duration_s=0.3"]))
+    assert summary["held"]
+    assert summary["object_rise_mm"] > 45
+
+
+def test_xarm_gripper_pads_face_the_object():
+    scene = Scene(load_scenario("xarm_lift"))
+    scene.hand.set_grip(scene.data, 6.0)
+    for _ in range(1500):
+        mujoco.mj_step(scene.model, scene.data)
+    fn, _, _ = contact_truth(scene)
+    finger = np.array([t.finger for t in scene.taxels])
+    per_pad = [fn[finger == i].sum() for i in range(2)]
+    assert np.allclose(per_pad, 6.0, rtol=0.02)
+
+
+def test_xarm_gripper_preset_override_and_slip():
+    grasp = load_scenario("grasp_lift", ["hand.type=xarm_gripper"])
+    assert grasp.hand.type == "xarm_gripper"
+
+    scenario = load_scenario("add_weight", ["hand.type=xarm_gripper"])
+    _, _, summary, _ = simulate(scenario)
+    assert summary["gross_slip_s"] is not None
+    assert summary["first_taxel_slip_s"] is not None
+    assert summary["first_taxel_slip_s"] < summary["gross_slip_s"] - 0.2

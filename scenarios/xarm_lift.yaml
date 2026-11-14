@@ -1,0 +1,17 @@
+description: "Двопалий UFACTORY xArm Gripper з XML-файлу: взяти циліндр і підняти"
+
+hand:
+  type: xml
+  file: hands/xarm_gripper/xarm_gripper.xml
+  palm_body: palm
+  grip_actuators: [left, right]
+  lift_actuator: lift
+  pads:
+    - {body: left_finger, pos_mm: [0, -32, 41], euler_deg: [0, 0, -90]}
+    - {body: right_finger, pos_mm: [0, 32, 41], euler_deg: [0, 0, 90]}
+
+phases:
+  - {do: close, force_n: 6}
+  - {do: hold, duration_s: 0.3}
+  - {do: lift, height_mm: 50, duration_s: 1.0}
+  - {do: hold, duration_s: 1.0}

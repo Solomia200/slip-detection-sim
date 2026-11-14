@@ -51,7 +51,28 @@ class XmlHandConfig(Strict):
     pads: list[PadMount] = Field(min_length=1)
 
 
-HandConfig = Annotated[Union[RadialHandConfig, XmlHandConfig], Field(discriminator="type")]
+class XarmGripperConfig(Strict):
+    """Preset UFACTORY xArm Gripper (hands/xarm_gripper/xarm_gripper.xml)."""
+    type: Literal["xarm_gripper"] = "xarm_gripper"
+    file: str = "hands/xarm_gripper/xarm_gripper.xml"
+    pos_mm: Vec3 = (0.0, 0.0, 0.0)
+    euler_deg: Vec3 = (0.0, 0.0, 0.0)
+    palm_body: str = "palm"
+    grip_actuators: list[str] = Field(default_factory=lambda: ["left", "right"], min_length=1)
+    lift_actuator: str | None = "lift"
+    pads: list[PadMount] = Field(
+        default_factory=lambda: [
+            PadMount(body="left_finger", pos_mm=(0.0, -32.0, 41.0), euler_deg=(0.0, 0.0, -90.0)),
+            PadMount(body="right_finger", pos_mm=(0.0, 32.0, 41.0), euler_deg=(0.0, 0.0, 90.0)),
+        ],
+        min_length=1,
+    )
+
+
+HandConfig = Annotated[
+    Union[RadialHandConfig, XmlHandConfig, XarmGripperConfig],
+    Field(discriminator="type"),
+]
 
 
 class PadConfig(Strict):
@@ -117,6 +138,8 @@ def hand_label(scenario):
     hand = scenario.hand
     if hand.type == "radial":
         return f"радіальний гріпер, {hand.n_fingers} пальці(в)"
+    if hand.type == "xarm_gripper":
+        return f"xArm Gripper, подушечок: {len(hand.pads)}"
     return f"{Path(hand.file).stem}, подушечок: {len(hand.pads)}"
 
 
@@ -172,7 +195,17 @@ def load_scenario(name, overrides=None):
     path = find_scenario(name)
     raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     raw.setdefault("name", path.stem)
-    return Scenario.model_validate(apply_overrides(raw, overrides))
+    prior_hand = raw.get("hand") if isinstance(raw.get("hand"), dict) else {}
+    prior_type = prior_hand.get("type", "radial")
+    raw = apply_overrides(raw, overrides)
+    if isinstance(raw.get("hand"), dict):
+        new_type = raw["hand"].get("type", "radial")
+        if new_type != prior_type:
+            override_keys = {item.split("=", 1)[0].strip() for item in (overrides or [])}
+            for field in set(RadialHandConfig.model_fields) - {"type"}:
+                if f"hand.{field}" not in override_keys:
+                    raw["hand"].pop(field, None)
+    return Scenario.model_validate(raw)
 
 
 def scenario_to_yaml(scenario):
